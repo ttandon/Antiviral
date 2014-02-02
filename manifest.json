@@ -1,17 +1,16 @@
 {
-  "name": "Antiviral",
+  "name": "AntiViral",
   "version": "0.1.0",
   "manifest_version": 2,
-  "description": "You Won't Believe What Your Timeline Will Look Like After Trying This Extension!",
+  "description": "Removes posts containing links to viral websites from Facebook.",
   "homepage_url": "https://github.com/supdegrave/Antiviral/",
   
   "content_scripts": [
     { 
       "matches": ["https://www.facebook.com/"],
-      "js": ["app.js"],
-      // "js": ["jquery.js","app.js"], // use this one if jQuery is needed 
+      "js": ["app.js"], 
+      // ["jquery.js","app.js"], // use this one if jQuery is needed 
       "run_at": "document_end"
-      // "run_at": "document_idle"
     }
   ]
 }
