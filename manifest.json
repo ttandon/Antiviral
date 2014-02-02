@@ -1,0 +1,17 @@
+{
+  "name": "Antiviral",
+  "version": "0.1.0",
+  "manifest_version": 2,
+  "description": "You Won't Believe What Your Timeline Will Look Like After Trying This Extension!",
+  "homepage_url": "https://github.com/supdegrave/Antiviral/",
+  
+  "content_scripts": [
+    { 
+      "matches": ["https://www.facebook.com/"],
+      "js": ["app.js"],
+      // "js": ["jquery.js","app.js"], // use this one if jQuery is needed 
+      "run_at": "document_end"
+      // "run_at": "document_idle"
+    }
+  ]
+}
