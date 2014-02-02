@@ -1,45 +1,39 @@
 // TODO: customization of blocked site list (remove defaults, add others)
 // TODO: debug mode: nodes hidden rather than being removed entirely, and can be shown again by user
 
-var sites              = [ "viralnova.com", "upworthy.com", "buzzfeed.com", "reshareworthy.com", "eltiempo.es" ],
+var sites              = [ "viralnova.com", "upworthy.com", "buzzfeed.com", "reshareworthy.com" ],
     sitesRegex         = new RegExp(sites.join('|'), 'i'), 
     timeline           = document.querySelector('div[id^=topnews_main_stream_]'), 
     MutationObserver   = MutationObserver || WebKitMutationObserver,
     removedNodeMessage = "AntiViral removed a post containing the blocked site ",
     removeWrapper      = false,
-    Settings = {
+    selector           = "div.clearfix.userContentWrapper"
+    Settings           = {
       ExecutionMode: null,
       RemoveWrapper: "REMOVE",
       PostMessage: "MESSAGE"
     };
-
-Settings.ExecutionMode = removeWrapper ? Settings.RemoveWrapper : Settings.PostMessage;
 
 function Antiviralize() {
   [].slice
     .call(timeline.querySelectorAll('a[target=_blank]'))
     .filter(function(e){ return !!e.href.match(sitesRegex); })
     .forEach( function(link) { 
-      var wrapper = ancestor(link, "div.clearfix.userContentWrapper");
-      var outerWrapper = ancestor(wrapper, "div.clearfix.userContentWrapper");
+      var wrapper = ancestor(link, selector), 
+          outerWrapper = ancestor(wrapper, selector),
+          parent, grandparent;
       
-      if (outerWrapper)
-      {
-        wrapper = outerWrapper;
-      }
+      if (outerWrapper) { wrapper = outerWrapper; }
       
       if (wrapper) {
         if (Settings.ExecutionMode === Settings.RemoveWrapper) {
-          var parent      = wrapper.parentNode,
-              grandparent = parent.parentNode;
-          if (parent && grandparent) {
+          if ((parent = wrapper.parentNode) && (grandparent = parent.parentNode)) {
             grandparent.removeChild(parent);
             console.log(inoculationReport(link)); 
           }
         }
         else {
-          var parent = wrapper.parentNode;
-          if (parent) {
+          if (parent = wrapper.parentNode) {
             parent.removeChild(wrapper);
             parent.innerText = inoculationReport(link);
             console.log(inoculationReport(link));
@@ -69,13 +63,17 @@ function inoculationReport(link) {
 }
 
 
-if (MutationObserver) {
-  new MutationObserver(function(mutations) { 
-    mutations.forEach(function(mutation) {
-      // we only care that a mutation occured, not about the contents 
-      Antiviralize();
-    });
-  }).observe(timeline, { childList: true, subtree: true });
-}
-
-(function() { Antiviralize(); }());
+( function() { 
+    Settings.ExecutionMode = removeWrapper ? Settings.RemoveWrapper : Settings.PostMessage;
+    Antiviralize();  
+    
+    if (MutationObserver) {
+      new MutationObserver(function(mutations) { 
+        mutations.forEach(function(mutation) {
+          // we only care that a mutation occured, not about the contents 
+          Antiviralize();
+        });
+      }).observe(timeline, { childList: true, subtree: true });
+    }
+  }
+)();
