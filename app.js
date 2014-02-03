@@ -1,5 +1,6 @@
-// TODO: customization of blocked site list (remove defaults, add others)
+// TODO: annotate links on inspection in order to avoid inspecting again
 // TODO: debug mode: nodes hidden rather than being removed entirely, and can be shown again by user
+// TODO: customization of blocked site list (remove defaults, add others)
 
 var sites              = [ "viralnova.com", "upworthy.com", "buzzfeed.com", "reshareworthy.com" ],
     sitesRegex         = new RegExp(sites.join('|'), 'i'), 
@@ -7,11 +8,12 @@ var sites              = [ "viralnova.com", "upworthy.com", "buzzfeed.com", "res
     MutationObserver   = MutationObserver || WebKitMutationObserver,
     removedNodeMessage = "AntiViral removed a post containing the blocked site ",
     removeWrapper      = false,
-    selector           = "div.clearfix.userContentWrapper"
+    contentSelector    = "div.clearfix.userContentWrapper",
+    commentSelector    = "div.UFICommentContent",
     Settings           = {
       ExecutionMode: null,
       RemoveWrapper: "REMOVE",
-      PostMessage: "MESSAGE"
+      PostMessage:   "MESSAGE"
     };
 
 function Antiviralize() {
@@ -19,27 +21,33 @@ function Antiviralize() {
     .call(timeline.querySelectorAll('a[target=_blank]'))
     .filter(function(e){ return !!e.href.match(sitesRegex); })
     .forEach( function(link) { 
-      var wrapper = ancestor(link, selector), 
-          outerWrapper = ancestor(wrapper, selector),
-          parent, grandparent;
+      var wrapper, outerWrapper, parent, grandparent;
       
-      if (outerWrapper) { wrapper = outerWrapper; }
-      
-      if (wrapper) {
-        if (Settings.ExecutionMode === Settings.RemoveWrapper) {
-          if ((parent = wrapper.parentNode) && (grandparent = parent.parentNode)) {
-            grandparent.removeChild(parent);
-            console.log(inoculationReport(link)); 
-          }
+      if (!ancestor(link, commentSelector)) {
+        wrapper = ancestor(link, contentSelector);
+        if (outerWrapper = ancestor(wrapper, contentSelector)) { 
+          wrapper = outerWrapper; 
         }
-        else {
-          if (parent = wrapper.parentNode) {
-            parent.removeChild(wrapper);
-            parent.innerText = inoculationReport(link);
-            console.log(inoculationReport(link));
-          }    
-        } 
-    }
+      
+        if (wrapper) {
+          if (Settings.ExecutionMode === Settings.RemoveWrapper) {
+            parent = wrapper.parentNode;
+            grandparent = parent.parentNode;
+            if (parent && grandparent) {
+              grandparent.removeChild(parent);
+              console.log(inoculationReport(link)); 
+            }
+          }
+          else {
+            parent = wrapper.parentNode;
+            if (parent) {
+              parent.removeChild(wrapper);
+              parent.innerText = inoculationReport(link);
+              console.log(inoculationReport(link));
+            }    
+          } 
+        }
+      }
   });
 }
 
@@ -47,11 +55,18 @@ function ancestor(elem, selector) {
   var matchesSelector = elem.matches || elem.webkitMatchesSelector || elem.mozMatchesSelector || elem.msMatchesSelector;
   elem = elem.parentNode;
   
-  while (elem) {
-    if (matchesSelector.bind(elem)(selector)) { 
-      return elem;
-    } else {
-      elem = elem.parentNode;
+  while (elem && elem !== document) {
+    try {
+      if (matchesSelector.bind(elem)(selector)) { 
+        return elem;
+      } 
+      else {
+        elem = elem.parentNode;
+      }
+    }
+    catch(err) {
+      console.log(elem, selector, err);
+      throw(err);
     }
   }
   
