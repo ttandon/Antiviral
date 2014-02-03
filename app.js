@@ -1,4 +1,5 @@
 // TODO: debug mode: nodes hidden rather than being removed entirely, and can be shown again by user
+//       only write to console.log in debug mode
 // TODO: customization of blocked site list (remove defaults, add others)
 
 var sites              = [ "viralnova.com", "upworthy.com", "buzzfeed.com", "reshareworthy.com", "youtube.com" ],
@@ -59,17 +60,11 @@ function ancestor(elem, selector) {
   elem = elem.parentNode;
   
   while (elem && elem !== document) {
-    try {
-      if (matchesSelector.bind(elem)(selector)) { 
-        return elem;
-      } 
-      else {
-        elem = elem.parentNode;
-      }
-    }
-    catch(err) {
-      console.log(elem, selector, err);
-      throw(err);
+    if (matchesSelector.bind(elem)(selector)) { 
+      return elem;
+    } 
+    else {
+      elem = elem.parentNode;
     }
   }
   
