@@ -7,13 +7,15 @@ var sites              = [ "viralnova.com", "upworthy.com", "buzzfeed.com", "res
     timeline           = document.querySelector('div[id^=topnews_main_stream_]'), 
     MutationObserver   = MutationObserver || WebKitMutationObserver,
     removedNodeMessage = "AntiViral removed a post containing the blocked site ",
-    removeWrapper      = false,
+    removeWrapper      = true,
+    debugMode          = true,
     contentSelector    = "div.clearfix.userContentWrapper",
     commentSelector    = "div.UFICommentContent",
     Settings           = {
       ExecutionMode: null,
-      RemoveWrapper: "REMOVE",
-      PostMessage:   "MESSAGE"
+      REMOVE:  "REMOVE",
+      MESSAGE: "MESSAGE",
+      DEBUG:   "DEBUG"
     };
 
 function Antiviralize() {
@@ -23,30 +25,27 @@ function Antiviralize() {
     .forEach( function(link) { 
       var wrapper, outerWrapper, parent, grandparent;
       
+      // check if this link has already been processed
       if (!(link.dataset.antiviral || link.getAttribute('data-antiviral'))) {
+        // make sure the link isn't in a comment
         if (!ancestor(link, commentSelector)) {
           wrapper = ancestor(link, contentSelector);
+          // check for nested userContentWrapper nodes
           if (outerWrapper = ancestor(wrapper, contentSelector)) { 
             wrapper = outerWrapper; 
           }
 
           if (wrapper) {
-            if (Settings.ExecutionMode === Settings.RemoveWrapper) {
-              parent = wrapper.parentNode;
-              grandparent = parent.parentNode;
-              if (parent && grandparent) {
-                grandparent.removeChild(parent);
-                console.log(inoculationReport(link)); 
-              }
+            if ((parent = wrapper.parentNode) 
+                && (grandparent = parent.parentNode)
+                && Settings.ExecutionMode === Settings.REMOVE) {
+              inoculate(grandparent, parent);
+              inoculationReport(link); 
             }
-            else {
-              parent = wrapper.parentNode;
-              if (parent) {
-                parent.removeChild(wrapper);
-                parent.innerText = inoculationReport(link);
-                console.log(inoculationReport(link));
-              }    
-            } 
+            else if (parent = wrapper.parentNode) {
+              inoculate(parent, wrapper);
+              parent.innerHTML = inoculationReport(link);
+            }    
           }
         }
       }
@@ -71,8 +70,25 @@ function ancestor(elem, selector) {
   return null;
 }
 
+function inoculate(parent, child) {
+  if (Settings.ExecutionMode === Settings.DEBUG) {
+    child.style.display = 'none';
+  } 
+  else { 
+    parent.removeChild(child);  
+  }
+}
+
 function inoculationReport(link) {
-  return removedNodeMessage + link.href.match(sitesRegex)[0] + '.';
+  var report = [removedNodeMessage, link.href.match(sitesRegex)[0], '.'];
+
+  console.log(report.join(''));
+    
+  if (Settings.ExecutionMode === Settings.DEBUG) {
+    report.push(" <a class='antiviral restore'>Restore</a>");
+  }
+
+  return report.join('');
 }
 
 function markAsInoculated(link) {
@@ -86,7 +102,10 @@ function markAsInoculated(link) {
 
 
 ( function() { 
-    Settings.ExecutionMode = removeWrapper ? Settings.RemoveWrapper : Settings.PostMessage;
+    Settings.ExecutionMode = debugMode 
+      ? Settings.DEBUG : removeWrapper 
+        ? Settings.REMOVE : Settings.MESSAGE;
+        
     Antiviralize();  
     
     if (MutationObserver) {
