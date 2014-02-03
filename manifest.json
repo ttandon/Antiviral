@@ -12,5 +12,14 @@
       // ["jquery.js","app.js"], // use this one if jQuery is needed 
       "run_at": "document_end"
     }
-  ]
+  ],
+  
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+   
+  "externally_connectable": {
+    "matches": ["https://www.facebook.com/"]
+  }
 }

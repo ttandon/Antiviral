@@ -1,13 +1,9 @@
-// TODO: debug mode: nodes hidden rather than being removed entirely, and can be shown again by user
-//       only write to console.log in debug mode
-// TODO: customization of blocked site list (remove defaults, add others)
-
 var sites              = [ "viralnova.com", "upworthy.com", "buzzfeed.com", "reshareworthy.com", "youtube.com" ],
     sitesRegex         = new RegExp(sites.join('|'), 'i'), 
     timeline           = document.querySelector('div[id^=topnews_main_stream_]'), 
     MutationObserver   = MutationObserver || WebKitMutationObserver,
     removedNodeMessage = "AntiViral removed a post containing the blocked site ",
-    removeWrapper      = true,
+    removeWrapper      = false,
     debugMode          = true,
     contentSelector    = "div.clearfix.userContentWrapper",
     commentSelector    = "div.UFICommentContent",
@@ -25,32 +21,26 @@ function Antiviralize() {
     .forEach( function(link) { 
       var wrapper, outerWrapper, parent, grandparent;
       
-      // check if this link has already been processed
-      if (!(link.dataset.antiviral || link.getAttribute('data-antiviral'))) {
-        // make sure the link isn't in a comment
-        if (!ancestor(link, commentSelector)) {
-          wrapper = ancestor(link, contentSelector);
-          // check for nested userContentWrapper nodes
-          if (outerWrapper = ancestor(wrapper, contentSelector)) { 
-            wrapper = outerWrapper; 
-          }
+      // make sure the link isn't in a comment
+      if (!ancestor(link, commentSelector)) {
+        wrapper = ancestor(link, contentSelector);
+   
+        // check for nested userContentWrapper nodes
+        if (outerWrapper = ancestor(wrapper, contentSelector)) { 
+          wrapper = outerWrapper; 
+        }
 
-          if (wrapper) {
-            if ((parent = wrapper.parentNode) 
-                && (grandparent = parent.parentNode)
-                && Settings.ExecutionMode === Settings.REMOVE) {
-              inoculate(grandparent, parent);
-              inoculationReport(link); 
-            }
-            else if (parent = wrapper.parentNode) {
-              inoculate(parent, wrapper);
-              parent.innerHTML = inoculationReport(link);
-            }    
+        if (wrapper) {
+          if (Settings.ExecutionMode === Settings.REMOVE
+              && (parent = wrapper.parentNode) 
+              && (grandparent = parent.parentNode)) {
+            inoculate(grandparent, parent, link);
           }
+          else if ((parent = wrapper.parentNode) && !inoculated(parent)) {
+            inoculate(parent, wrapper, link);
+          }    
         }
       }
-      
-      markAsInoculated(link);
   });
 }
 
@@ -70,34 +60,49 @@ function ancestor(elem, selector) {
   return null;
 }
 
-function inoculate(parent, child) {
-  if (Settings.ExecutionMode === Settings.DEBUG) {
+function inoculate(parent, child, link) {
+  if (Settings.ExecutionMode === Settings.DEBUG) { 
     child.style.display = 'none';
   } 
   else { 
     parent.removeChild(child);  
   }
-}
-
-function inoculationReport(link) {
-  var report = [removedNodeMessage, link.href.match(sitesRegex)[0], '.'];
-
-  console.log(report.join(''));
-    
-  if (Settings.ExecutionMode === Settings.DEBUG) {
-    report.push(" <a class='antiviral restore'>Restore</a>");
+  
+  markAsInoculated(parent);
+  
+  if (link) {
+    reportInoculation(link, parent); 
   }
-
-  return report.join('');
 }
 
-function markAsInoculated(link) {
-  if (link.dataset) {
-    link.dataset.antiviral = "inoculated";
+function reportInoculation(link, parent) {
+  var report = [removedNodeMessage, link.href.match(sitesRegex)[0], '.'];
+  
+  console.log(report.join(''));
+
+  if (Settings.ExecutionMode === Settings.DEBUG) {
+    console.log(link);
+    report.push(" <a class='antiviral restore'>Restore</a>");
+    var node = document.createElement('span');
+    parent.appendChild(node);
+    node.innerHTML = report.join('');
   }
   else {
-    link.getAttribute('data-antiviral') = "inoculated";
+    parent.innerHTML = report.join('');
   }
+}
+
+function markAsInoculated(elem) {
+  if (elem.dataset) {
+    elem.dataset.antiviral = "inoculated";
+  }
+  else {
+    elem.setAttribute('data-antiviral', "inoculated");
+  }
+}
+
+function inoculated(elem) {
+  return !!(elem.dataset.antiviral || elem.getAttribute('data-antiviral'));
 }
 
 
