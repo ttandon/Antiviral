@@ -1,11 +1,12 @@
-var sites              = [ "viralnova.com", "upworthy.com", "buzzfeed.com", "reshareworthy.com", "youtube.com" ],
-    sitesRegex         = new RegExp(sites.join('|'), 'i'), 
+var blacklist          = [ "viralnova.com", "upworthy.com", "buzzfeed.com", "reshareworthy.com", "youtube.com" ],
+    blacklistRegex     = new RegExp(blacklist.join('|'), 'i'), 
     timeline           = document.querySelector('div[id^=topnews_main_stream_]'), 
     MutationObserver   = MutationObserver || WebKitMutationObserver,
     removedNodeMessage = "AntiViral removed a post containing the blocked site ",
     removeWrapper      = false,
     debugMode          = true,
-    contentSelector    = "div.clearfix.userContentWrapper",
+    // contentSelector    = "div.clearfix.userContentWrapper",
+    contentSelector    = "div[data-timestamp]", // different selector 
     commentSelector    = "div.UFICommentContent",
     Settings           = {
       ExecutionMode: null,
@@ -16,19 +17,25 @@ var sites              = [ "viralnova.com", "upworthy.com", "buzzfeed.com", "res
 
 function Antiviralize() {
   [].slice
+    // get all external links 
     .call(timeline.querySelectorAll('a[target=_blank]'))
-    .filter(function(e){ return !!e.href.match(sitesRegex); })
+    // filter to only process links on blacklist
+    .filter(function(e){ return !!e.href.match(blacklistRegex); })
     .forEach( function(link) { 
-      var wrapper, outerWrapper, parent, grandparent;
+      var wrapper, 
+          // outerWrapper, 
+          parent, 
+          grandparent;
       
       // make sure the link isn't in a comment
       if (!ancestor(link, commentSelector)) {
         wrapper = ancestor(link, contentSelector);
    
-        // check for nested userContentWrapper nodes
-        if (outerWrapper = ancestor(wrapper, contentSelector)) { 
-          wrapper = outerWrapper; 
-        }
+        // // check for nested userContentWrapper nodes
+        // if (outerWrapper = ancestor(wrapper, contentSelector)) { 
+        //   debug("found outerwrapper");
+        //   wrapper = outerWrapper; 
+        // }
 
         if (wrapper) {
           if (Settings.ExecutionMode === Settings.REMOVE
@@ -57,6 +64,7 @@ function ancestor(elem, selector) {
     }
   }
   
+  if (!elem) { debug(arguments); }
   return null;
 }
 
@@ -76,12 +84,12 @@ function inoculate(parent, child, link) {
 }
 
 function reportInoculation(link, parent) {
-  var report = [removedNodeMessage, link.href.match(sitesRegex)[0], '.'];
+  var report = [removedNodeMessage, link.href.match(blacklistRegex)[0], '.'];
   
-  console.log(report.join(''));
+  // debug(report.join(''));
 
   if (Settings.ExecutionMode === Settings.DEBUG) {
-    console.log(link);
+    // debug(link);
     report.push(" <a class='antiviral restore'>Restore</a>");
     var node = document.createElement('span');
     parent.appendChild(node);
@@ -103,6 +111,14 @@ function markAsInoculated(elem) {
 
 function inoculated(elem) {
   return !!(elem.dataset.antiviral || elem.getAttribute('data-antiviral'));
+}
+
+function debug() {
+  if (Settings.ExecutionMode === Settings.DEBUG) {
+    Array.prototype.slice.call(arguments).forEach(function(arg) {
+      console.log(arg);
+    });
+  }
 }
 
 
