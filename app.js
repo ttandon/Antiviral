@@ -49,23 +49,44 @@ function Antiviralize() {
 }
 
 function ancestor(elem, selector) {
-  if (elem) {
-    var matchesSelector = elem.matches || elem.webkitMatchesSelector || elem.mozMatchesSelector || elem.msMatchesSelector;
-    elem = elem.parentNode;
-
-    while (elem && elem !== document) {
-      if (matchesSelector.bind(elem)(selector)) { 
-        return elem;
-      } 
-      else {
-        elem = elem.parentNode;
-      }
+  if (!elem || !selector) {
+    if (Settings.ExecutionMode === Settings.DEBUG)
+    {
+      debug('function ancestor:', arguments);
+      throw("Missing argument!");
+    }
+    else {
+      return null;
     }
   }
+  
+  var matchesSelector = elem.matches || elem.webkitMatchesSelector || elem.mozMatchesSelector || elem.msMatchesSelector;
+  elem = elem.parentNode;
+
+  while (elem && elem !== document) {
+    if (matchesSelector.bind(elem)(selector)) { 
+      return elem;
+    } 
+    else {
+      elem = elem.parentNode;
+    }
+  }
+
   return null;
 }
 
 function reportInoculation(link, parent) {
+  if (!link || !parent) {
+    if (Settings.ExecutionMode === Settings.DEBUG)
+    {
+      debug('function reportInoculation:', arguments);
+      throw("Missing argument!");
+    }
+    else {
+      return null;
+    }
+  }
+  
   var report = [removedNodeMessage, link.href.match(blacklistRegex)[0]];
   
   if (Settings.ExecutionMode === Settings.DEBUG) {
@@ -81,6 +102,17 @@ function reportInoculation(link, parent) {
 }
 
 function markAsInoculated(elem) {
+  if (!elem) {
+    if (Settings.ExecutionMode === Settings.DEBUG)
+    {
+      debug('function markAsInoculated:', arguments);
+      throw("Missing argument!");
+    }
+    else {
+      return null;
+    }
+  }
+  
   if (elem.dataset) {
     elem.dataset.antiviral = "inoculated";
   }
@@ -90,6 +122,17 @@ function markAsInoculated(elem) {
 }
 
 function inoculated(elem) {
+  if (!elem) {
+    if (Settings.ExecutionMode === Settings.DEBUG)
+    {
+      debug('function markAsInoculated:', arguments);
+      throw("Missing argument!");
+    }
+    else {
+      return null;
+    }
+  }
+  
   return !!(elem.dataset.antiviral || elem.getAttribute('data-antiviral'));
 }
 
