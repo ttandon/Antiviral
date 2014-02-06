@@ -65,7 +65,7 @@ function reportInoculation(link, parent) {
   
   if (Settings.ExecutionMode === Settings.DEBUG) {
     debug(report.join(' '));
-    report.push("<a onclick='function(e) { alert(e); }' class='antiviral restore'>Restore</a>");
+    report.push("<a onclick='toggle(this);' class='antiviral restore'>Restore</a>");
     var node = document.createElement('span');
     parent.appendChild(node);
     node.innerHTML = report.join(' ');
@@ -100,7 +100,14 @@ function debug() {
     Settings.ExecutionMode = debugMode 
       ? Settings.DEBUG : removeWrapper 
         ? Settings.REMOVE : Settings.MESSAGE;
-        
+    
+    var s = document.createElement('script');
+    s.src = chrome.extension.getURL('page.js');
+    s.onload = function() {
+        this.parentNode.removeChild(this);
+    };
+    (document.head||document.documentElement).appendChild(s);
+    
     Antiviralize();  
     
     if (MutationObserver) {

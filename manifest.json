@@ -14,12 +14,14 @@
     }
   ],
   
-  "background": {
-    "scripts": ["background.js"],
-    "persistent": false
-  },
+  // "background": {
+  //   "scripts": ["background.js"],
+  //   "persistent": false
+  // },
    
-  "externally_connectable": {
-    "matches": ["https://www.facebook.com/"]
-  }
+  // "externally_connectable": {
+  //   "matches": ["https://www.facebook.com/"]
+  // },
+  
+  "web_accessible_resources": ["page.js"]
 }
