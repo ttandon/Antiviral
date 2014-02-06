@@ -1,12 +1,17 @@
 var blacklist          = [ "viralnova.com", "upworthy.com", "buzzfeed.com", "reshareworthy.com", "youtube.com" ],
     blacklistRegex     = new RegExp(blacklist.join('|'), 'i'), 
-    timeline           = document.querySelector('div[id^=topnews_main_stream_]'), 
+    
+    SELECTOR_COMMENT   = 'div.UFICommentContent', 
+    SELECTOR_CONTENT   = 'div[data-ft*=mf_story_key]', 
+    SELECTOR_EXT_LINK  = 'a[target=_blank]',
+    SELECTOR_TIMELINE  = 'div[id^=topnews_main_stream_]',
+    
+    timeline           = document.querySelector(SELECTOR_TIMELINE), 
     MutationObserver   = MutationObserver || WebKitMutationObserver,
     removedNodeMessage = "AntiViral removed a post containing the blocked site",
     removeWrapper      = false,
     debugMode          = true,
-    contentSelector    = "div[data-ft*=mf_story_key]", 
-    commentSelector    = "div.UFICommentContent",
+    
     Settings           = {
       ExecutionMode: null,
       REMOVE:  "REMOVE",
@@ -18,11 +23,11 @@ function Antiviralize() {
   var wrapper; 
   [].slice
     // get all external links 
-    .call(timeline.querySelectorAll('a[target=_blank]'))
+    .call(timeline.querySelectorAll(SELECTOR_EXT_LINK))
     // filter to only process links on blacklist
     .filter(function(e){ return !!e.href.match(blacklistRegex); })
     .forEach( function(link) {       
-      if (!ancestor(link, commentSelector) && (wrapper = ancestor(link, contentSelector))) {
+      if (!ancestor(link, SELECTOR_COMMENT) && (wrapper = ancestor(link, SELECTOR_CONTENT))) {
         if (Settings.ExecutionMode === Settings.REMOVE && (!inoculated(wrapper.parentNode))) {
           markAsInoculated(wrapper.parentNode);
           wrapper.parentNode.removeChild(wrapper);
