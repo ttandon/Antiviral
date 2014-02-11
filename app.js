@@ -26,7 +26,7 @@ function Antiviralize() {
     .call(timeline.querySelectorAll(SELECTOR_EXT_LINK))
     // filter to only process links on blacklist
     .filter(function(e){ return !!e.href.match(blacklistRegex); })
-    .forEach( function(link) {       
+    .forEach( function(link) { 
       if (!ancestor(link, SELECTOR_COMMENT) && (wrapper = ancestor(link, SELECTOR_CONTENT))) {
         if (Settings.ExecutionMode === Settings.REMOVE && (!inoculated(wrapper.parentNode))) {
           markAsInoculated(wrapper.parentNode);
@@ -91,7 +91,7 @@ function reportInoculation(link, parent) {
   
   if (Settings.ExecutionMode === Settings.DEBUG) {
     debug(report.join(' '));
-    report.push("<a onclick='toggle(this);' class='antiviral restore'>Restore</a>");
+    report.push("<a onclick='toggle(this);'>Undo</a>");
     var node = document.createElement('span');
     parent.appendChild(node);
     node.innerHTML = report.join(' ');
@@ -148,14 +148,14 @@ function debug() {
     Settings.ExecutionMode = debugMode 
       ? Settings.DEBUG : removeWrapper 
         ? Settings.REMOVE : Settings.MESSAGE;
-    
+
     var s = document.createElement('script');
     s.src = chrome.extension.getURL('page.js');
     s.onload = function() {
         this.parentNode.removeChild(this);
     };
     (document.head||document.documentElement).appendChild(s);
-    
+
     Antiviralize();  
     
     if (MutationObserver) {

@@ -7,7 +7,7 @@
   
   "content_scripts": [
     { 
-      "matches": ["https://www.facebook.com/"],
+      "matches": ["https://www.facebook.com/*"],
       "js": ["app.js"], 
       // ["jquery.js","app.js"], // use this one if jQuery is needed 
       "run_at": "document_end"
