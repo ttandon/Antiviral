@@ -1,4 +1,4 @@
-Antiviral
+Antiviral-AskFM
 =========
 
-Chrome browser extension to remove viral website posts from Facebook. 
+Chrome extension to remove attention-whoring ask.fm posts on Facebook. Forked from supdegrave's Antiviral
