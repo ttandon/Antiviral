@@ -1,14 +1,16 @@
-var blacklist          = [ "viralnova.com", "upworthy.com", "buzzfeed.com", "reshareworthy.com", "youtube.com" ],
+var blacklist          = [ "ask.fm"],
     blacklistRegex     = new RegExp(blacklist.join('|'), 'i'), 
     
     SELECTOR_COMMENT   = 'div.UFICommentContent', 
     SELECTOR_CONTENT   = 'div[data-ft*=mf_story_key]', 
     SELECTOR_EXT_LINK  = 'a[target=_blank]',
     SELECTOR_TIMELINE  = 'div[id^=topnews_main_stream_]',
-    
+    //let's grab the timeline from the dom
     timeline           = document.querySelector(SELECTOR_TIMELINE), 
+    //we can check for changes "mutations" to the DOM
     MutationObserver   = MutationObserver || WebKitMutationObserver,
-    removedNodeMessage = "AntiViral removed a post containing the blocked site",
+    //what we'll display once the bitch's post is removed.
+    removedNodeMessage = "RemoveAsk removed an attention whore's post.",
     removeWrapper      = false,
     debugMode          = true,
     
